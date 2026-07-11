@@ -1,5 +1,5 @@
-streamlit
-pandas
-numpy
-scikit-learn
-pdfplumber
+app.py
+tfidf.pkl
+job_vectors.pkl.gz
+jobs.pkl.gz
+requirements.txt
