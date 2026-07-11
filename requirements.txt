@@ -1,5 +1,4 @@
-app.py
-tfidf.pkl
-job_vectors.pkl.gz
-jobs.pkl.gz
-requirements.txt
+numpy
+pandas
+matplotlib
+scikit-learn
