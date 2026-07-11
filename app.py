@@ -7,12 +7,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 # ---------------- Load Model Files ----------------
 
+import gzip
+
 tfidf = pickle.load(open("tfidf.pkl", "rb"))
 
-job_vectors = pickle.load(open("job_vectors.pkl", "rb"))
+job_vectors = pickle.load(
+    gzip.open("job_vectors.pkl.gz", "rb")
+)
 
-jobs = pickle.load(open("jobs.pkl", "rb"))
-
+jobs = pickle.load(
+    gzip.open("jobs.pkl.gz", "rb")
+)
 
 # ---------------- Resume Text Extraction ----------------
 
