@@ -186,25 +186,21 @@ def recommend_job(resume_text):
 
 st.markdown("""
 <style>
-
 .stApp{
     background: linear-gradient(135deg,#eef2ff,#f8fafc);
 }
-
 .main-title{
     font-size:45px;
     font-weight:bold;
     text-align:center;
     color:#1e3a8a;
 }
-
 .sub-title{
     text-align:center;
     font-size:18px;
     color:#475569;
     margin-bottom:30px;
 }
-
 .job-card{
     background:white;
     padding:20px;
@@ -212,18 +208,15 @@ st.markdown("""
     margin:15px 0px;
     box-shadow:0px 4px 12px rgba(0,0,0,0.1);
 }
-
 .job-title{
     font-size:22px;
     font-weight:bold;
     color:#2563eb;
 }
-
 .job-desc{
     font-size:15px;
     color:#334155;
 }
-
 .skill-box{
     background:#dbeafe;
     padding:8px 15px;
@@ -233,9 +226,16 @@ st.markdown("""
     color:#1e40af;
     font-weight:bold;
 }
-
 </style>
 """, unsafe_allow_html=True)
+
+# इमेज अॅड करा (width वापरून)
+st.image(
+    "https://copilot.microsoft.com/th/id/BCO.ca96c099-c07c-4c79-9d8b-5fa0bad02520.png",
+    width=500  # इथे तुम्ही हवी तशी रुंदी सेट करू शकता
+)
+
+
 
 
 
