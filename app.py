@@ -119,21 +119,18 @@ skill_list = [
     "css",
     "javascript",
     "react",
-    "nodejs",
-    "django",
+    
+    
     "flask",
     "machine learning",
     "deep learning",
     "nlp",
-    "tensorflow",
     "pandas",
     "numpy",
     "data analysis",
     "data science",
-    "power bi",
     "excel",
-    "git",
-    "github"
+   
 
 ]
 
@@ -181,6 +178,35 @@ def recommend_job(resume_text):
 
 
     return result
+
+
+
+# ---------------- Recommendation ----------------
+
+# ---------------- Recommendation ----------------
+# if st.button("🚀 Find Suitable Jobs"):
+#     result = recommend_job(resume_text)
+#     st.subheader("🎯 Recommended Jobs")
+#     for index, row in result.iterrows():
+#         st.markdown(
+#             f"""
+#             <div class='job-card'>
+#                 <div class='job-title'>💼 {row['job_title']}</div>
+#                 <br>
+#                 <b>🎯 Match Score:</b> {row['Match Score']}%
+#             </div>
+#             """,
+#             unsafe_allow_html=True
+#         )
+
+#     # Download Report
+#     csv = result[['job_title','Match Score']].to_csv(index=False)
+#     st.download_button(
+#         label="📥 Download Recommendation Report",
+#         data=csv,
+#         file_name="Job_Recommendation_Report.csv",
+#         mime="text/csv"
+#     )
 
 # ---------------- Custom CSS ----------------
 
@@ -232,7 +258,9 @@ st.markdown("""
 # इमेज अॅड करा (width वापरून)
 st.image(
     "https://copilot.microsoft.com/th/id/BCO.ca96c099-c07c-4c79-9d8b-5fa0bad02520.png",
-    width=500  # इथे तुम्ही हवी तशी रुंदी सेट करू शकता
+    #"https://copilot.microsoft.com/th/id/BCO.7a3f9b2d-4e2a-4f9c-9c3a-8f2c7e6a9a11.png",
+    #"https://copilot.microsoft.com/th/id/BCO.9c5d8f44-2b6e-4a7e-8e9d-1a2b3c4d5e67.png",
+    width=500  
 )
 
 
@@ -397,80 +425,27 @@ if uploaded_file:
     # Recommendation
 
 
-    if st.button(
-        "🚀 Find Suitable Jobs"
-    ):
-
-
-        result = recommend_job(
-            resume_text
-        )
-
-
-        st.subheader(
-            "🎯 Recommended Jobs"
-        )
-
-
-        for index,row in result.iterrows():
-
-
+        # Recommendation
+    if st.button("🚀 Find Suitable Jobs"):
+        result = recommend_job(resume_text)
+        st.subheader("🎯 Recommended Jobs")
+        for index, row in result.iterrows():
             st.markdown(
-
                 f"""
-
                 <div class='job-card'>
-
-
-                <div class='job-title'>
-
-                💼 {row['job_title']}
-
+                    <div class='job-title'>💼 {row['job_title']}</div>
+                    <br>
+                    <b>🎯 Match Score:</b> {row['Match Score']}%
                 </div>
-
-
-                <br>
-
-
-                <b>🎯 Match Score:</b>
-                {row['Match Score']}%
-
-
-                <br><br>
-
-
-                <div class='job-desc'>
-
-                {row['job_description'][:400]}...
-
-                </div>
-
-
-                </div>
-
                 """,
-
                 unsafe_allow_html=True
             )
 
-
-
         # Download Report
-
-
-        csv = result.to_csv(
-            index=False
-        )
-
-
+        csv = result[['job_title','Match Score']].to_csv(index=False)
         st.download_button(
-
             label="📥 Download Recommendation Report",
-
             data=csv,
-
             file_name="Job_Recommendation_Report.csv",
-
             mime="text/csv"
-
         )
