@@ -1,15 +1,24 @@
 import streamlit as st
 import pickle
+import gzip
 import pdfplumber
-import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
+
+
+# ---------------- Page Configuration ----------------
+
+st.set_page_config(
+    page_title="AI Job Recommendation System",
+    page_icon="💼",
+    layout="wide"
+)
 
 
 # ---------------- Load Model Files ----------------
 
-import gzip
-
-tfidf = pickle.load(open("tfidf.pkl", "rb"))
+tfidf = pickle.load(
+    open("tfidf.pkl", "rb")
+)
 
 job_vectors = pickle.load(
     gzip.open("job_vectors.pkl.gz", "rb")
@@ -18,6 +27,8 @@ job_vectors = pickle.load(
 jobs = pickle.load(
     gzip.open("jobs.pkl.gz", "rb")
 )
+
+
 
 # ---------------- Resume Text Extraction ----------------
 
@@ -34,24 +45,96 @@ def extract_resume_text(pdf_file):
             if page_text:
                 text += page_text + " "
 
+    text = text.replace("\n", " ")
+    text = " ".join(text.split())
+
     return text
 
 
 
+# ---------------- Resume Validation ----------------
+
+def check_resume(text):
+
+    import re
+
+    text = text.lower()
+
+    # Email check
+    has_email = bool(
+        re.search(r'\S+@\S+\.\S+', text)
+    )
+
+    # Phone check
+    has_phone = bool(
+        re.search(r'\b\d{10}\b', text)
+    )
+
+
+    # Mandatory Resume Sections
+
+    has_skills = (
+        "skills" in text or
+        "technical skills" in text
+    )
+
+    has_education = (
+        "education" in text or
+        "qualification" in text
+    )
+
+    has_experience = (
+        "experience" in text or
+        "internship" in text or
+        "project" in text
+    )
+
+
+    # Resume Validation
+
+    if (
+        has_skills
+        and has_education
+        and has_experience
+        and (has_email or has_phone)
+    ):
+        return True
+
+    else:
+        return False
+
+
 # ---------------- Skill Extraction ----------------
 
+
 skill_list = [
+
     "python",
+    "java",
+    "c",
+    "c++",
     "sql",
+    "mysql",
+    "html",
+    "css",
+    "javascript",
+    "react",
+    "nodejs",
+    "django",
+    "flask",
     "machine learning",
+    "deep learning",
     "nlp",
+    "tensorflow",
     "pandas",
     "numpy",
     "data analysis",
-    "java",
-    "html",
-    "css",
-    "javascript"
+    "data science",
+    "power bi",
+    "excel",
+    "git",
+    "github"
+
 ]
 
 
@@ -59,51 +142,45 @@ def extract_skills(text):
 
     text = text.lower()
 
-    found_skills = []
+    skills = []
 
     for skill in skill_list:
 
         if skill in text:
-            found_skills.append(skill)
+            skills.append(skill)
 
-    return found_skills
+    return list(set(skills))
 
 
 
 # ---------------- Job Recommendation ----------------
 
+
 def recommend_job(resume_text):
 
-    resume_vector = tfidf.transform([resume_text])
-
-
-    similarity_scores = cosine_similarity(
-        resume_vector,
-        job_vectors
+    resume_vector = tfidf.transform(
+        [resume_text]
     )
 
 
-    top_indices = similarity_scores[0].argsort()[-5:][::-1]
+    similarity = cosine_similarity(
+        resume_vector,
+        job_vectors
+    )[0]
 
 
-    recommended_jobs = jobs.iloc[top_indices]
+    top_index = similarity.argsort()[-5:][::-1]
 
 
-    return recommended_jobs[
-        ["job_title", "job_description"]
-    ]
+    result = jobs.iloc[top_index].copy()
 
 
-
-# ---------------- Page Configuration ----------------
-
-st.set_page_config(
-    page_title="AI Job Recommendation System",
-    page_icon="💼",
-    layout="wide"
-)
+    result["Match Score"] = (
+        similarity[top_index] * 100
+    ).round(2)
 
 
+    return result
 
 # ---------------- Custom CSS ----------------
 
@@ -111,99 +188,92 @@ st.markdown("""
 <style>
 
 .stApp{
-
-background: linear-gradient(
-135deg,
-#eef2ff,
-#f8fafc
-);
-
+    background: linear-gradient(135deg,#eef2ff,#f8fafc);
 }
-
 
 .main-title{
-
-font-size:45px;
-font-weight:bold;
-text-align:center;
-color:#1e3a8a;
-
+    font-size:45px;
+    font-weight:bold;
+    text-align:center;
+    color:#1e3a8a;
 }
-
 
 .sub-title{
-
-text-align:center;
-font-size:18px;
-color:#475569;
-margin-bottom:30px;
-
+    text-align:center;
+    font-size:18px;
+    color:#475569;
+    margin-bottom:30px;
 }
-
-
 
 .job-card{
-
-background:white;
-padding:20px;
-border-radius:15px;
-margin:15px 0px;
-box-shadow:0px 4px 12px rgba(0,0,0,0.1);
-
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    margin:15px 0px;
+    box-shadow:0px 4px 12px rgba(0,0,0,0.1);
 }
-
-
 
 .job-title{
-
-font-size:22px;
-font-weight:bold;
-color:#2563eb;
-
+    font-size:22px;
+    font-weight:bold;
+    color:#2563eb;
 }
-
 
 .job-desc{
-
-font-size:15px;
-color:#334155;
-
+    font-size:15px;
+    color:#334155;
 }
 
+.skill-box{
+    background:#dbeafe;
+    padding:8px 15px;
+    border-radius:20px;
+    margin:5px;
+    display:inline-block;
+    color:#1e40af;
+    font-weight:bold;
+}
 
 </style>
-
 """, unsafe_allow_html=True)
 
 
 
 # ---------------- Sidebar ----------------
 
-st.sidebar.title("💼 Project Info")
+st.sidebar.title("💼 Project Information")
+
+st.sidebar.write("""
+
+### AI Job Recommendation System
 
 
-st.sidebar.write(
-"""
-**AI Job Recommendation System**
+Technology Used:
 
-Built Using:
+🔹 NLP
 
-🔹 NLP  
-🔹 TF-IDF Vectorization  
-🔹 Cosine Similarity  
+🔹 TF-IDF Vectorization
+
+🔹 Cosine Similarity
+
+🔹 Machine Learning
+
 
 Features:
 
-✅ Resume Analysis  
-✅ Skill Extraction  
-✅ Job Recommendation  
+✅ Resume Analysis
 
-"""
-)
+✅ Skill Extraction
+
+✅ Job Recommendation
+
+✅ Download Report
+
+""")
 
 
 st.sidebar.info(
-f"Total Jobs Available: {len(jobs)}"
+    f"Total Jobs Available : {len(jobs)}"
 )
 
 
@@ -212,21 +282,24 @@ f"Total Jobs Available: {len(jobs)}"
 
 
 st.markdown(
-"<div class='main-title'>💼 AI Job Recommendation System</div>",
-unsafe_allow_html=True
+    "<div class='main-title'>💼 AI Job Recommendation System</div>",
+    unsafe_allow_html=True
 )
 
 
 st.markdown(
-"<div class='sub-title'>NLP Based Resume Analysis & Job Matching System</div>",
-unsafe_allow_html=True
+    "<div class='sub-title'>NLP Based Resume Analysis & Job Matching System</div>",
+    unsafe_allow_html=True
 )
 
 
 
+# ---------------- Upload Resume ----------------
+
+
 uploaded_file = st.file_uploader(
-"📄 Upload Your Resume PDF",
-type=["pdf"]
+    "📄 Upload Your Resume PDF",
+    type=["pdf"]
 )
 
 
@@ -234,42 +307,104 @@ type=["pdf"]
 if uploaded_file:
 
 
-    resume_text = extract_resume_text(uploaded_file)
+    resume_text = extract_resume_text(
+        uploaded_file
+    )
+
+
+    # Empty PDF Check
+
+    if resume_text.strip() == "":
+
+        st.error(
+            "❌ No text found in PDF."
+        )
+
+        st.stop()
+
+
+
+    # Resume Validation
+
+    if not check_resume(resume_text):
+
+        st.error(
+            "❌ Please upload a valid Resume PDF only."
+        )
+
+        st.info(
+            "This document does not look like a resume."
+        )
+
+        st.stop()
+
 
 
     st.success(
-        "Resume Uploaded Successfully ✅"
+        "✅ Resume Uploaded Successfully"
     )
 
 
 
-    # Skills Display
+    # Resume Preview
 
-    skills = extract_skills(resume_text)
+    with st.expander("📄 Resume Preview"):
+
+        st.write(
+            resume_text[:1500]
+        )
 
 
-    st.subheader("🧠 Detected Skills")
+
+    # Skills
+
+
+    skills = extract_skills(
+        resume_text
+    )
+
+
+    st.subheader(
+        "🧠 Detected Skills"
+    )
 
 
     if skills:
 
+
         for skill in skills:
 
-            st.badge(skill)
+            st.markdown(
+
+                f"""
+                <span class='skill-box'>
+                {skill}
+                </span>
+                """,
+
+                unsafe_allow_html=True
+            )
+
 
     else:
 
-        st.write("No skills detected")
+        st.warning(
+            "⚠️ No skills detected."
+        )
 
 
 
-    # Recommendation Button
+    # Recommendation
 
 
-    if st.button("🚀 Find Suitable Jobs"):
+    if st.button(
+        "🚀 Find Suitable Jobs"
+    ):
 
 
-        result = recommend_job(resume_text)
+        result = recommend_job(
+            resume_text
+        )
 
 
         st.subheader(
@@ -277,40 +412,45 @@ if uploaded_file:
         )
 
 
-
         for index,row in result.iterrows():
 
 
             st.markdown(
 
-            f"""
+                f"""
 
-            <div class='job-card'>
-
-
-            <div class='job-title'>
-
-            💼 {row['job_title']}
-
-            </div>
+                <div class='job-card'>
 
 
-            <br>
+                <div class='job-title'>
+
+                💼 {row['job_title']}
+
+                </div>
 
 
-            <div class='job-desc'>
-
-            {row['job_description'][:350]}...
-
-            </div>
+                <br>
 
 
-            </div>
+                <b>🎯 Match Score:</b>
+                {row['Match Score']}%
 
-            """,
 
-            unsafe_allow_html=True
+                <br><br>
 
+
+                <div class='job-desc'>
+
+                {row['job_description'][:400]}...
+
+                </div>
+
+
+                </div>
+
+                """,
+
+                unsafe_allow_html=True
             )
 
 
@@ -318,7 +458,9 @@ if uploaded_file:
         # Download Report
 
 
-        csv = result.to_csv(index=False)
+        csv = result.to_csv(
+            index=False
+        )
 
 
         st.download_button(
